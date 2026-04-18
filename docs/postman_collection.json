@@ -1,0 +1,188 @@
+{
+  "info": {
+    "name": "Mental Health Check-in API",
+    "description": "Complete API collection for the Daily Mental Health Check-in system.\n\n**Setup:**\n1. Import this collection into Postman\n2. Set the `baseUrl` variable to your server (default: `http://localhost:3000`)\n3. Run `Register` then `Login` — the session cookie is set automatically\n4. All other requests use that cookie automatically",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "checkinId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Example\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"SecurePass1\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login successful', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"SecurePass1\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/verify", "host": ["{{baseUrl}}"], "path": ["auth", "verify"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Check-ins",
+      "item": [
+        {
+          "name": "Create Check-in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const id = pm.response.json().data.id;",
+                  "  pm.collectionVariables.set('checkinId', id);",
+                  "  console.log('Saved checkinId:', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/checkins", "host": ["{{baseUrl}}"], "path": ["checkins"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mood\": 7,\n  \"stress\": 4,\n  \"sleepHours\": 7.5,\n  \"energy\": 6,\n  \"note\": \"Productive day, a bit tired in the afternoon.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Check-ins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/checkins?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkins"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "from",  "value": "2025-01-01", "disabled": true },
+                { "key": "to",    "value": "2025-12-31", "disabled": true },
+                { "key": "mood",  "value": "7",          "disabled": true }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Check-in",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/checkins/{{checkinId}}", "host": ["{{baseUrl}}"], "path": ["checkins", "{{checkinId}}"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Check-in",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/checkins/{{checkinId}}", "host": ["{{baseUrl}}"], "path": ["checkins", "{{checkinId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mood\": 8,\n  \"stress\": 3,\n  \"sleepHours\": 8,\n  \"energy\": 8,\n  \"note\": \"Updated — feeling much better after rest.\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Check-in (Soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/checkins/{{checkinId}}", "host": ["{{baseUrl}}"], "path": ["checkins", "{{checkinId}}"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/dashboard", "host": ["{{baseUrl}}"], "path": ["dashboard"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
